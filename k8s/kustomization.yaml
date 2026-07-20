@@ -1,0 +1,22 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: iac-security-auditor
+
+commonLabels:
+  app.kubernetes.io/part-of: iac-security-auditor
+  app.kubernetes.io/managed-by: kustomize
+
+namePrefix: iac-
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+  - secret.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - pvc.yaml
+  - network-policy.yaml

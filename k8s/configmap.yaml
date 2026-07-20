@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+  labels:
+    app.kubernetes.io/name: iac-security-auditor
+    app.kubernetes.io/component: configmap
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  POSTGRES_DB: "iac_auditor"
+  REDIS_URL: "redis://iac-redis:6379/0"
+  DATABASE_URL: "postgresql+asyncpg://auditor:changeme@iac-postgres:5432/iac_auditor"
