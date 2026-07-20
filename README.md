@@ -1,18 +1,18 @@
 # iac-security-auditor
 
-IaC Security Auditor. FastAPI-сервис, который проверяет Infrastructure-as-Code
-(Terraform/Kubernetes манифесты) на уязвимости и небезопасные практики с
-помощью LLM-аудитора, генерирует Pr-с рекомендациями и поднимает воркеры
-для асинхронных проверок.
+An Infrastructure-as-Code security auditor. A FastAPI service that scans IaC
+(Terraform / Kubernetes manifests) for misconfigurations and insecure
+practices using an LLM auditor, generates pull-request recommendations, and
+runs async audits via a worker.
 
-## Стек
+## Stack
 - FastAPI (webhooks + audits routes)
-- LLM-аудитор (`src/services/llm_auditor.py`) + парсер манифестов
-- Генератор PR (`src/services/pr_generator.py`)
-- Worker (`src/workers/audit_worker.py`) для фоновых задач
-- Тесты: `tests/test_parser.py`, `tests/conftest.py`
+- LLM auditor (`src/services/llm_auditor.py`) + manifest parser
+- PR generator (`src/services/pr_generator.py`)
+- Background worker (`src/workers/audit_worker.py`)
+- Tests: `tests/test_parser.py`, `tests/conftest.py`
 
-## Запуск
+## Run
 ```bash
 pip install -e .
 uvicorn src.main:app --port 8000
@@ -21,13 +21,14 @@ docker build -t iac-security-auditor .
 docker-compose up
 ```
 
-## Тестирование
+## Test
 ```bash
 pytest -q
 ```
 
 ## CI
-`.github/workflows/ci.yml` — lint + pytest на каждый push.
+`.github/workflows/ci.yml` — lint + `pytest` on every push, with
+least-privilege permissions and pinned action versions.
 
-## Автор
+## Author
 Nick Yakim — github.com/yakim-nick
