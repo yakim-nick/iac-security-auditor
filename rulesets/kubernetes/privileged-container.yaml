@@ -1,0 +1,6 @@
+id: K8S-PRIV-001
+description: Container is running with privileged security context, granting all root capabilities and host access.
+severity: critical
+resource_type: Pod
+match_pattern: (?i)privileged\s*:\s*true
+remediation: Set `securityContext.privileged: false` and drop all capabilities with `securityContext.capabilities.drop: ["ALL"]`.

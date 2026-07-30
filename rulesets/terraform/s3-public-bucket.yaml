@@ -1,0 +1,6 @@
+id: TF-S3-001
+description: S3 bucket ACL is set to public-read or public-read-write, exposing data to the internet.
+severity: critical
+resource_type: aws_s3_bucket
+match_pattern: (?i)(acl\s*=\s*["']public-(read|read-write)["'])
+remediation: Set the bucket ACL to "private" or use aws_s3_bucket_public_access_block to block public access entirely.

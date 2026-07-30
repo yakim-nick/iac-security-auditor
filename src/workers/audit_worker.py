@@ -5,19 +5,34 @@ import base64
 import logging
 
 import httpx
-from celery import Celery
+from celery import Celery, shared_task
 
 from src.config import settings
-
-app = Celery("iac_auditor", broker=settings.redis_url, backend=settings.redis_url)
-app.conf.task_serializer = "json"
-app.conf.accept_content = ["json"]
-app.conf.result_expires = 3600
 
 logger = logging.getLogger(__name__)
 
 
-@app.task(bind=True, max_retries=3, default_retry_delay=30)
+def create_celery_app() -> Celery:
+    """Create and configure the Celery application after config is loaded."""
+    app = Celery("iac_auditor", broker=settings.redis_url, backend=settings.redis_url)
+    app.conf.task_serializer = "json"
+    app.conf.accept_content = ["json"]
+    app.conf.result_expires = 3600
+    return app
+
+
+# Lazy singleton — callers use get_celery_app() to obtain the configured instance.
+_celery_app: Celery | None = None
+
+
+def get_celery_app() -> Celery:
+    global _celery_app
+    if _celery_app is None:
+        _celery_app = create_celery_app()
+    return _celery_app
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=30)
 def run_audit(
     self,
     repo: str,

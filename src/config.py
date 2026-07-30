@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     audit_branch_prefix: str = "security/auto-fix/"
     log_level: str = "INFO"
+    llm_model: str = "claude-3-sonnet-20241022"
 
     class Config:
         env_file = ".env"

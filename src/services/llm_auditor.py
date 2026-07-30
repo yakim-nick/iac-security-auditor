@@ -32,7 +32,7 @@ class LLMAuditor:
     async def audit(self, manifest_text: str, filename: str) -> list[dict]:
         try:
             response = await self._client.messages.create(
-                model="claude-3-sonnet-20241022",
+                model=settings.llm_model,
                 system=AUDIT_SYSTEM_PROMPT,
                 messages=[{
                     "role": "user",

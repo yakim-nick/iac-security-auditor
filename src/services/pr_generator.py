@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from github import Github
 
 from src.config import settings
@@ -41,9 +42,8 @@ class PRGenerator:
                     continue
                 try:
                     contents = repo.get_contents(file_path, ref=branch)
-                    updated_content = manifest_content.replace(
-                        finding.get("description", ""),
-                        finding.get("remediation", ""),
+                    updated_content = self._apply_fix(
+                        manifest_content, finding
                     )
                     repo.update_file(
                         path=file_path,
@@ -66,6 +66,31 @@ class PRGenerator:
         except Exception as exc:
             logger.error(f"PR creation failed: {exc}", exc_info=True)
             return None
+
+    @staticmethod
+    def _apply_fix(manifest_content: str, finding: dict) -> str:
+        description = finding.get("description", "")
+        remediation = finding.get("remediation", "")
+        line_num = finding.get("line", 0)
+
+        if not description and not remediation:
+            return manifest_content
+
+        lines = manifest_content.splitlines(keepends=True)
+
+        if isinstance(line_num, int) and line_num > 0 and line_num <= len(lines):
+            lines[line_num - 1] = remediation.rstrip("\n\r") + "\n"
+            return "".join(lines)
+
+        for i, ln in enumerate(lines):
+            if re.search(re.escape(description), ln, re.IGNORECASE):
+                lines[i] = remediation.rstrip("\n\r") + "\n"
+                return "".join(lines)
+
+        logger.warning(
+            "Could not locate description in manifest; falling back to global replace"
+        )
+        return manifest_content.replace(description, remediation)
 
     def _build_pr_body(self, findings: list[dict]) -> str:
         lines = ["## Automated Security Audit Findings\n"]
