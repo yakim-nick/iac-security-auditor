@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pytest
 from src.services.manifest_parser import ManifestParser
 
 
@@ -9,6 +8,7 @@ class TestManifestParser:
         self.parser = ManifestParser()
 
     def test_parse_yaml(self):
+        """YAML manifests should parse into a dict with kind and metadata."""
         yaml_content = """
 apiVersion: v1
 kind: Pod
@@ -26,11 +26,13 @@ spec:
         assert result["metadata"]["name"] == "test-pod"
 
     def test_parse_json(self):
+        """JSON manifests should parse into a dict."""
         json_content = '{"resource": [{"type": "aws_s3_bucket", "name": "data-lake"}]}'
         result = self.parser.parse(json_content, "main.tf.json")
         assert "resource" in result
 
     def test_extract_resources_from_terraform(self):
+        """Terraform resource blocks should flatten into one descriptor each."""
         parsed = {
             "resource": {
                 "aws_s3_bucket": {
@@ -53,6 +55,7 @@ spec:
         assert resources[1]["name"] == "web"
 
     def test_extract_resources_from_kubernetes(self):
+        """A single Kubernetes manifest should yield one resource descriptor."""
         parsed = {
             "apiVersion": "v1",
             "kind": "Deployment",

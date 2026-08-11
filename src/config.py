@@ -1,10 +1,13 @@
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
+# Load .env before instantiating Settings so local overrides take effect.
 load_dotenv()
 
 
 class Settings(BaseSettings):
+    """Application configuration, sourced from environment variables and .env."""
+
     github_token: str = ""
     github_webhook_secret: str = ""
     anthropic_api_key: str = ""

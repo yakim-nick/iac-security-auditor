@@ -26,10 +26,13 @@ Return JSON array: [{"severity": "...", "rule_id": "...", "description": "...", 
 
 
 class LLMAuditor:
+    """Audit IaC manifests via the Anthropic API and return structured findings."""
+
     def __init__(self):
         self._client = AsyncAnthropic(api_key=settings.anthropic_api_key)
 
     async def audit(self, manifest_text: str, filename: str) -> list[dict]:
+        """Ask the LLM to audit a manifest; return findings, or [] on any failure."""
         try:
             response = await self._client.messages.create(
                 model=settings.llm_model,
@@ -42,15 +45,23 @@ class LLMAuditor:
                 max_tokens=4000,
             )
             raw = response.content[0].text if response.content else "[]"
-            raw = raw.strip()
-            if raw.startswith("```"):
-                raw = raw.split("\n", 1)[1] if "\n" in raw else raw
-                raw = raw.rsplit("```", 1)[0] if "```" in raw else raw
-            findings = json.loads(raw)
-            if isinstance(findings, dict):
-                findings = [findings]
+            findings = self._parse_findings(raw)
             logger.info(f"Audit found {len(findings)} issues in {filename}")
             return findings
         except Exception as exc:
+            # A failed audit must not take down the worker; report and continue.
             logger.error(f"Audit failed for {filename}: {exc}", exc_info=True)
             return []
+
+    @staticmethod
+    def _parse_findings(raw: str) -> list[dict]:
+        """Strip markdown fences from the LLM reply and normalize it to a list."""
+        raw = raw.strip()
+        if raw.startswith("```"):
+            # LLMs often wrap JSON in a ```json ... ``` code fence.
+            raw = raw.split("\n", 1)[1] if "\n" in raw else raw
+            raw = raw.rsplit("```", 1)[0] if "```" in raw else raw
+        findings = json.loads(raw)
+        if isinstance(findings, dict):
+            findings = [findings]
+        return findings

@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Open the DB pool on startup and close it on shutdown."""
     logger.info("Starting IaC Security Auditor")
     await init_db()
     yield
@@ -31,8 +32,10 @@ app = FastAPI(title="IaC Security Auditor", version="1.0.0", lifespan=lifespan)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    """Turn any unhandled exception into a generic 500 so internals never leak."""
     logger.error(f"Unhandled: {exc}", exc_info=True)
     return JSONResponse(status_code=500, content={"error": "internal_server_error"})
+
 
 app.include_router(webhook_router, prefix="/webhooks")
 app.include_router(audit_router, prefix="/audits")
@@ -40,4 +43,5 @@ app.include_router(audit_router, prefix="/audits")
 
 @app.get("/health")
 async def health():
+    """Liveness probe for orchestrators and load balancers."""
     return {"status": "healthy", "version": "1.0.0"}
