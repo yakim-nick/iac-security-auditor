@@ -1,5 +1,7 @@
 # iac-security-auditor
 
+[![CI](https://github.com/yakim-nick/iac-security-auditor/actions/workflows/ci.yml/badge.svg)](https://github.com/yakim-nick/iac-security-auditor/actions/workflows/ci.yml)
+
 > **Engineering report** — scans Infrastructure-as-Code (Terraform / Kubernetes)
 > for misconfigurations using an LLM auditor, then raises fixes as PRs. By Nick Yakim.
 
